@@ -13,7 +13,7 @@ RUN groupadd -r sgs && useradd -r -g sgs -u 1001 sgs \
 WORKDIR /app
 COPY --from=build /src/target/sgs-backend.jar app.jar
 USER sgs
-EXPOSE 8080
+EXPOSE 8081
 # Small-VPS friendly: serial GC, capped heap, headless AWT (image processing).
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65 -XX:+UseSerialGC -Xss512k -Djava.awt.headless=true"
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
