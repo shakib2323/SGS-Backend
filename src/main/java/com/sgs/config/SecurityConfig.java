@@ -39,9 +39,9 @@ public class SecurityConfig {
         http
                 // CSRF is handled by SameSite cookie + mandatory custom header (see JwtAuthFilter).
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors ->
-                cors.configurationSource(corsConfigurationSource())
-            )
+            //     .cors(cors ->
+            //     cors.configurationSource(corsConfigurationSource())
+            // )
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
