@@ -49,8 +49,12 @@ public class ImageStorageService {
 
     @PostConstruct
     void init() throws IOException {
-        this.root = Path.of(props.storage().root()).toAbsolutePath().normalize();
-        Files.createDirectories(root);
+        // this.root = Path.of(props.storage().root()).toAbsolutePath().normalize();
+        // Files.createDirectories(root);
+        this.root = Path.of(props.storage().root())
+        .toAbsolutePath()
+        .normalize();
+Files.createDirectories(root);
     }
 
     public Stored store(MultipartFile file, String folder, Profile profile) {
