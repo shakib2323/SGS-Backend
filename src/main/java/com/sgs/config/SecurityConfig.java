@@ -94,12 +94,19 @@ CorsConfigurationSource corsConfigurationSource() {
         "DELETE", "OPTIONS"
     ));
 
+    // c.setAllowedHeaders(List.of(
+    //     "Content-Type",
+    //     "X-Requested-With",
+    //     "Accept",
+    //     "Authorization"
+    // ));
     c.setAllowedHeaders(List.of(
-        "Content-Type",
-        "X-Requested-With",
-        "Accept",
-        "Authorization"
-    ));
+    "Content-Type",
+    "X-Requested-With",
+    "Accept",
+    "Authorization",
+    "X-CSRF-Token"
+));
 
     c.setAllowCredentials(true);
     c.setMaxAge(3600L);
