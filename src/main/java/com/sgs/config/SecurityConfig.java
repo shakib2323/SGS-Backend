@@ -75,48 +75,48 @@ public class SecurityConfig {
 //        return source;
 //    }
 
-@Bean
-CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration c = new CorsConfiguration();
+// @Bean
+// CorsConfigurationSource corsConfigurationSource() {
+//     CorsConfiguration c = new CorsConfiguration();
 
-    c.setAllowedOrigins(List.of(
-    "https://superglazingsystem.netlify.app",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "http://localhost:5501",
-    "http://127.0.0.1:5501",
-    "http://localhost:3000"
+//     c.setAllowedOrigins(List.of(
+//     "https://superglazingsystem.netlify.app",
+//     "http://localhost:5500",
+//     "http://127.0.0.1:5500",
+//     "http://localhost:5501",
+//     "http://127.0.0.1:5501",
+//     "http://localhost:3000"
     
-));
+// ));
 
-    c.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "PATCH",
-        "DELETE", "OPTIONS"
-    ));
+//     c.setAllowedMethods(List.of(
+//         "GET", "POST", "PUT", "PATCH",
+//         "DELETE", "OPTIONS"
+//     ));
 
-    // c.setAllowedHeaders(List.of(
-    //     "Content-Type",
-    //     "X-Requested-With",
-    //     "Accept",
-    //     "Authorization"
-    // ));
     c.setAllowedHeaders(List.of(
-    "Content-Type",
-    "X-Requested-With",
-    "Accept",
-    "Authorization",
-    "X-CSRF-Token"
-));
+        "Content-Type",
+        "X-Requested-With",
+        "Accept",
+        "Authorization"
+    ));
+//     c.setAllowedHeaders(List.of(
+//     "Content-Type",
+//     "X-Requested-With",
+//     "Accept",
+//     "Authorization",
+//     "X-CSRF-Token"
+// ));
 
-    c.setAllowCredentials(true);
-    c.setMaxAge(3600L);
+    // c.setAllowCredentials(true);
+    // c.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source =
-        new UrlBasedCorsConfigurationSource();
+    // UrlBasedCorsConfigurationSource source =
+    //     new UrlBasedCorsConfigurationSource();
 
-    source.registerCorsConfiguration("/**", c);
+    // source.registerCorsConfiguration("/**", c);
 
-    return source;
+    // return source;
 }
 
 }
