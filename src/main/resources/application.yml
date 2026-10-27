@@ -53,7 +53,7 @@ app:
   cookie:
     name: SGS_AUTH
     secure: ${COOKIE_SECURE:true}
-    same-site: ${COOKIE_SAME_SITE:Strict}
+    same-site: ${COOKIE_SAME_SITE:None}
   cors:
     allowed-origins: ${CORS_ORIGINS:}
 #  storage:
