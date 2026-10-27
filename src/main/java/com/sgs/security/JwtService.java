@@ -26,7 +26,10 @@ public class JwtService {
     private final Clock clock;
 
     public JwtService(AppProperties props, Clock clock) {
-        this.key = Keys.hmacShaKeyFor(props.jwt().secret().getBytes(StandardCharsets.UTF_8));
+        // this.key = Keys.hmacShaKeyFor(props.jwt().secret().getBytes(StandardCharsets.UTF_8));
+        this.key = Keys.hmacShaKeyFor(
+    props.jwt().secret().getBytes(StandardCharsets.UTF_8)
+);
         this.expiry = props.jwt().expiry() == null ? Duration.ofHours(8) : props.jwt().expiry();
         this.clock = clock;
     }
