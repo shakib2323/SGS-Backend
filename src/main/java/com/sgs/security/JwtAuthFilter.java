@@ -55,37 +55,88 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = readCookie(req);
-        if (token != null) {
-            Optional<JwtService.Parsed> parsed = jwt.parse(token);
-            if (parsed.isPresent()) {
-                User u = users.findById(parsed.get().userId()).orElse(null);
-                Instant now = clock.instant();
-                if (u != null && u.getTokenVersion() == parsed.get().tokenVersion()) {
-                    if (u.isSuspended(now)) {
-                        req.setAttribute(ATTR_AUTH_ERROR, "ACCOUNT_SUSPENDED");
-                    } else {
-                        String path = req.getRequestURI();
-                        boolean protectedPath = isProtected(path);
-                        if (protectedPath && !SAFE_METHODS.contains(req.getMethod())
-                                && !"XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
-                            JsonErrors.write(mapper, res, 403, "CSRF_HEADER_MISSING",
-                                    "Missing X-Requested-With header");
-                            return;
-                        }
-                        if (protectedPath && u.isMustChangePassword() && !path.startsWith("/api/auth/")) {
-                            JsonErrors.write(mapper, res, 403, "PASSWORD_CHANGE_REQUIRED",
-                                    "You must change your password before continuing");
-                            return;
-                        }
-                        AuthUser principal = new AuthUser(u.getId(), u.getUsername(), u.getRole());
-                        var auth = new UsernamePasswordAuthenticationToken(principal, null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name())));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    }
+        // if (token != null) {
+        //     Optional<JwtService.Parsed> parsed = jwt.parse(token);
+        //     if (parsed.isPresent()) {
+        //         User u = users.findById(parsed.get().userId()).orElse(null);
+        //         Instant now = clock.instant();
+        //         if (u != null && u.getTokenVersion() == parsed.get().tokenVersion()) {
+        //             if (u.isSuspended(now)) {
+        //                 req.setAttribute(ATTR_AUTH_ERROR, "ACCOUNT_SUSPENDED");
+        //             } else {
+        //                 String path = req.getRequestURI();
+        //                 boolean protectedPath = isProtected(path);
+        //                 if (protectedPath && !SAFE_METHODS.contains(req.getMethod())
+        //                         && !"XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+        //                     JsonErrors.write(mapper, res, 403, "CSRF_HEADER_MISSING",
+        //                             "Missing X-Requested-With header");
+        //                     return;
+        //                 }
+        //                 if (protectedPath && u.isMustChangePassword() && !path.startsWith("/api/auth/")) {
+        //                     JsonErrors.write(mapper, res, 403, "PASSWORD_CHANGE_REQUIRED",
+        //                             "You must change your password before continuing");
+        //                     return;
+        //                 }
+        //                 AuthUser principal = new AuthUser(u.getId(), u.getUsername(), u.getRole());
+        //                 var auth = new UsernamePasswordAuthenticationToken(principal, null,
+        //                         List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name())));
+        //                 SecurityContextHolder.getContext().setAuthentication(auth);
+        //             }
+        //         }
+        //     }
+        // }
+        // chain.doFilter(req, res);
+
+
+        //         String token = readCookie(req);
+
+if (token != null) {
+    Optional<JwtService.Parsed> parsed = jwt.parse(token);
+
+    if (parsed.isPresent()) {
+        JwtService.Parsed claims = parsed.get();
+        User user = users.findById(claims.userId()).orElse(null);
+
+        if (user != null && user.getTokenVersion() == claims.tokenVersion()) {
+            Instant now = clock.instant();
+
+            if (user.isSuspended(now)) {
+                req.setAttribute(ATTR_AUTH_ERROR, "ACCOUNT_SUSPENDED");
+            } else {
+                String path = req.getRequestURI();
+                boolean protectedPath = isProtected(path);
+
+                if (protectedPath
+                        && !SAFE_METHODS.contains(req.getMethod())
+                        && !"XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+                    JsonErrors.write(mapper, res, 403, "CSRF_HEADER_MISSING",
+                            "Missing X-Requested-With header");
+                    return;
                 }
+
+                if (protectedPath && user.isMustChangePassword()
+                        && !path.startsWith("/api/auth/")) {
+                    JsonErrors.write(mapper, res, 403, "PASSWORD_CHANGE_REQUIRED",
+                            "You must change your password before continuing");
+                    return;
+                }
+
+                AuthUser principal =
+                        new AuthUser(user.getId(), user.getUsername(), user.getRole());
+
+                var auth = new UsernamePasswordAuthenticationToken(
+                        principal,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
-        chain.doFilter(req, res);
+    }
+}
+
+chain.doFilter(req, res);
     }
 
     private static boolean isProtected(String path) {
