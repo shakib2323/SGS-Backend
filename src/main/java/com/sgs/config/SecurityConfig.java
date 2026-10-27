@@ -1,3 +1,4 @@
+
 package com.sgs.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,6 @@ import com.sgs.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,67 +34,87 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtService jwt, UserRepository users, AppProperties props,
-                                    ObjectMapper mapper, Clock clock, RestAuthEntryPoint entryPoint) throws Exception {
+    SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtService jwt,
+            UserRepository users,
+            AppProperties props,
+            ObjectMapper mapper,
+            Clock clock,
+            RestAuthEntryPoint entryPoint,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
+
         http
-                // CSRF is handled by SameSite cookie + mandatory custom header (see JwtAuthFilter).
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors ->
-                cors.configurationSource(corsConfigurationSource())
-            )
-                .cors(Customizer.withDefaults())
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .sessionManagement(s ->
+                        s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/public/**", "/api/auth/login", "/api/auth/logout").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/health/**", "/files/**", "/error").permitAll()
+                        .requestMatchers(
+                                "/api/public/**",
+                                "/api/auth/login",
+                                "/api/auth/logout"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/actuator/health/**",
+                                "/files/**",
+                                "/error"
+                        ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/employee/**").hasRole("EMPLOYEE")
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().denyAll())
-                .exceptionHandling(e -> e.authenticationEntryPoint(entryPoint).accessDeniedHandler(entryPoint))
+                        .anyRequest().denyAll()
+                )
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(entryPoint))
                 .headers(h -> h
                         .frameOptions(f -> f.deny())
-                        .contentSecurityPolicy(c -> c.policyDirectives("default-src 'none'; frame-ancestors 'none'")))
-                .addFilterBefore(new JwtAuthFilter(jwt, users, props, mapper, clock), UsernamePasswordAuthenticationFilter.class);
+                        .contentSecurityPolicy(c ->
+                                c.policyDirectives(
+                                        "default-src 'none'; frame-ancestors 'none'")))
+                .addFilterBefore(
+                        new JwtAuthFilter(jwt, users, props, mapper, clock),
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
         return http.build();
     }
 
-@Bean
-CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration c = new CorsConfiguration();
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration c = new CorsConfiguration();
 
-    c.setAllowedOrigins(List.of(
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:5501",
-        "http://127.0.0.1:5501",
-        "http://localhost:3000",
-        "https://superglazingsystem.netlify.app/",
-        "https://sgs-backend-i8im.onrender.com/api/auth/me"
-    ));
+        c.setAllowedOrigins(List.of(
+                "http://localhost:5500",
+                "http://127.0.0.1:5500",
+                "http://localhost:5501",
+                "http://127.0.0.1:5501",
+                "http://localhost:3000",
+                "https://superglazingsystem.netlify.app"
+        ));
 
-    c.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "PATCH",
-        "DELETE", "OPTIONS"
-    ));
+        c.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
 
-    c.setAllowedHeaders(List.of(
-        "Content-Type",
-        "X-Requested-With",
-        "Accept",
-        "Authorization"
-    ));
+        c.setAllowedHeaders(List.of(
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Authorization"
+        ));
 
-    c.setAllowCredentials(true);
-    c.setMaxAge(3600L);
+        c.setAllowCredentials(true);
+        c.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source =
-        new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
-    source.registerCorsConfiguration("/**", c);
-
-    return source;
-}
-
+        source.registerCorsConfiguration("/**", c);
+        return source;
+    }
 }
